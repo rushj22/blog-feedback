@@ -17,6 +17,9 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.svm import LinearSVC 
 from sklearn.svm.classes import NuSVR
 from sklearn.linear_model import ElasticNet
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import classification_report
 
 
 import warnings
@@ -79,6 +82,33 @@ def linearRegression():
 	trainXScaled = scaler.fit_transform(trainX)
 	testXScaled = scaler.transform(testX)
 
+	"""
+	tuned_parameters = [{'alpha': [pow(2, -6), pow(2, -5), pow(2, -3), pow(2, -1), pow(2, 1), pow(2, 3), pow(2, 5)]}]
+
+
+	ridge = GridSearchCV(linear_model.Ridge(alpha=pow(2, -6)), tuned_parameters, cv=5)
+	ridge.fit(trainX, trainY)
+	print ridge.best_params_
+	print ridge.best_score_
+	"""
+
+	"""
+	tuned_parameters = [{'alpha': [pow(2, -6), pow(2, -5), pow(2, -3), pow(2, -1), pow(2, 1), pow(2, 3), pow(2, 5)]}]
+
+	lasso = GridSearchCV(linear_model.Lasso(alpha=pow(2, -6)), tuned_parameters, cv=5)
+	lasso.fit(trainXScaled, trainY)
+	print lasso.best_params_
+	print lasso.best_score_
+	"""
+
+	"""
+	tuned_parameters = [{'alpha': [pow(2,-6), pow(2, -5), pow(2, -3), pow(2, -1), pow(2, 1), pow(2, 3), pow(2, 5)]}]
+
+	enet = GridSearchCV(linear_model.ElasticNet(alpha=pow(2, -6), l1_ratio=0.7), tuned_parameters, cv=5)
+	enet.fit(trainXScaled, trainY)
+	print enet.best_params_
+	print enet.best_score_
+	"""
 	
 	"""
 	lin = linear_model.LinearRegression()
@@ -87,6 +117,51 @@ def linearRegression():
       % np.mean((lin.predict(testXScaled) - testY) ** 2))
 
 	"""
+
+	tuned_parameters = [pow(2, -6), pow(2, -5), pow(2, -4), pow(2, -3), pow(2, -2), pow(2, -1), 1]
+
+	ridgeScores = []
+	lassoScores = []
+	enetScores = []
+
+	"""for power in tuned_parameters:
+
+		ridge = linear_model.Ridge(alpha = power)
+		scores = cross_val_score(ridge, trainXScaled, trainY, cv=5)
+		score = np.mean(np.asarray(scores))
+		ridgeScores.append(score)"""
+
+	for power in tuned_parameters:
+
+		lasso = linear_model.Lasso(alpha = power)
+		scores = cross_val_score(lasso, trainXScaled, trainY, cv=5)
+		score = np.mean(np.asarray(scores))
+		lassoScores.append(score)
+
+	for power in tuned_parameters:
+
+		enet = linear_model.ElasticNet(alpha = power, l1_ratio=0.7)
+		scores = cross_val_score(enet, trainXScaled, trainY, cv=5)
+		score = np.mean(np.asarray(scores))
+		enetScores.append(score)
+	
+
+	fig, ax = plt.subplots()
+	plt.title('Lasso and ElasticNet regression hyperparameter estimation')
+	#ax.plot(tuned_parameters, ridgeScores, 'r', label='Ridge')
+	ax.plot(tuned_parameters, lassoScores, 'b', label='Lasso')
+	ax.plot(tuned_parameters, enetScores, 'g', label='ElasticNet')
+	#plt.show()
+	plt.xlabel('alpha Value')
+	plt.ylabel('Mean Cross Validation Score')
+	legend = ax.legend(loc='upper center')
+	#plt.show()
+	#axes = plt.gca()
+	#axes.set_xlim([xmin,xmax])
+	#plt.show()
+	plt.savefig("Lasso and ElasticNet Hyperparameter Estimation.png")
+	plt.gcf().clear()
+
 
 	"""
 	ridge = linear_model.Ridge(alpha = pow(10, -5))
